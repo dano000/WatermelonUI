@@ -3,6 +3,7 @@
 #
 #
 #
+
 import sys
 from PyQt5 import QtCore, QtWidgets, QtGui
 import cv2
@@ -47,13 +48,13 @@ class VideoDisplay(QtWidgets.QWidget):
 
 		self.layout = QtWidgets.QFormLayout(self)
 
-		self.startButton = QtWidgets.QPushButton('Start',parent)
-		self.startButton.clicked.connect(parent.startCapture)
-		self.startButton.setFixedWidth(50)
+		# self.startButton = QtWidgets.QPushButton('Start',parent)
+		# self.startButton.clicked.connect(parent.startCapture)
+		# self.startButton.setFixedWidth(50)
 
 		self.captureButton = QtWidgets.QPushButton('Capture',parent)
 		self.captureButton.clicked.connect(parent.captureImg)
-		self.layout.addRow(self.startButton,self.captureButton)
+		self.layout.addRow(self.captureButton)
 		self.setLayout(self.layout)
 
 
