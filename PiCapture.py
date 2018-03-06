@@ -40,7 +40,7 @@ class VideoCapture(QtWidgets.QWidget):
 		self.camera = picamera.PiCamera()
 		self.stream = io.BytesIO()
 		self.parent = parent
-		self.camera.resolution = (1024,768)
+		self.camera.resolution = (512,389)
 		self.refresh_rate = 1000/30
 
 	def nextFrame(self):
@@ -53,7 +53,7 @@ class VideoCapture(QtWidgets.QWidget):
 		frame = stream.read(-1)
 		self.img = QtGui.QImage(frame,res[0],res[1],QtGui.QImage.Format_RGB888)
 		pix = QtGui.QPixmap.fromImage(self.img)
-		self.parent.video_frame.setPixmap(pix)
+		self.parent.videoframe.setPixmap(pix)
 
 	def start(self):
 		self.timer = QtCore.QTimer()
@@ -102,7 +102,7 @@ class VideoDisplay(QtWidgets.QWidget):
 		self.videoframe = QLabel('vidframe')
 
 		self.layout.addWidget(self.ripebutton,0,0)
-		self.layout.addWidget(self.unripebutton,5,0)
+		self.layout.addWidget(self.unripebutton,6,0)
 		self.layout.addWidget(self.countlabel,0,5)
 		self.layout.addWidget(self.count,1,5)
 		self.layout.addWidget(self.countslider,2,5,5,1)
