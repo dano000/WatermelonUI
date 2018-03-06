@@ -6,6 +6,8 @@
 
 import sys
 from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import QPushButton,QLabel,QSlider,QGridLayout
+
 import picamera
 import io
 
@@ -14,118 +16,172 @@ import datetime
 import os
 import uuid
 
-
+save_path = './'
 
 
 def upload(filename,ripe='F'):
-    #URL of Flask server (assuming localhost)
-    #url = "http://127.0.0.1:5000/upload"
-    url = "http://watermelon-flask.hp7jzffnep.ap-southeast-2.elasticbeanstalk.com/upload"
-    # File array for request
-    files = {'files': open(filename, 'rb')}
+	#URL of Flask server (assuming localhost)
+	#url = "http://127.0.0.1:5000/upload"
+	# url = "http://watermelon-flask.hp7jzffnep.ap-southeast-2.elasticbeanstalk.com/upload"
+	# # File array for request
+	# files = {'files': open(filename, 'rb')}
   
-    datetime_result = datetime.datetime.now()
-    unique_id = str(uuid.uuid4()) + os.path.splitext(filename)[-1]
+	# datetime_result = datetime.datetime.now()
+	# unique_id = str(uuid.uuid4()) + os.path.splitext(filename)[-1]
 
-    data = {'r': ripe, 'd': datetime_result, 'k': unique_id}
-    # Add both the file image to upload, and accompanying data and POST
-    r = requests.post(url, files=files, data=data)
-    print(str(r.content))
+	# data = {'r': ripe, 'd': datetime_result, 'k': unique_id}
+	# # Add both the file image to upload, and accompanying data and POST
+	# r = requests.post(url, files=files, data=data)
+	# print(str(r.content))
+	print('uploading')
 class VideoCapture(QtWidgets.QWidget):
-    def __init__(self,parent):
-        super(QtWidgets.QWidget,self).__init__()
-        self.camera = picamera.PiCamera()
-        self.stream = io.BytesIO()
-        self.camera.resolution = (1024,768)
-        self.video_frame = QtWidgets.QLabel()
-        parent.layout.addWidget(self.video_frame)
-        self.refresh_rate = 1000/30
+	def __init__(self,parent):
+		super(QtWidgets.QWidget,self).__init__()
+		self.camera = picamera.PiCamera()
+		self.stream = io.BytesIO()
+		self.parent = parent
+		self.camera.resolution = (1024,768)
+		self.refresh_rate = 1000/30
 
-    def nextFrame(self):
-        #Capture frame-by-frame
-        stream = io.BytesIO()
-        self.camera.capture(stream,use_video_port='true',format='rgb')
-        stream.seek(0)
-        #Display frame
-        res = self.camera.resolution
-        frame = stream.read(-1)
-        self.img = QtGui.QImage(frame,res[0],res[1],QtGui.QImage.Format_RGB888)
-        pix = QtGui.QPixmap.fromImage(self.img)
-        self.video_frame.setPixmap(pix)
+	def nextFrame(self):
+		#Capture frame-by-frame
+		stream = io.BytesIO()
+		self.camera.capture(stream,use_video_port='true',format='rgb')
+		stream.seek(0)
+		#Display frame
+		res = self.camera.resolution
+		frame = stream.read(-1)
+		self.img = QtGui.QImage(frame,res[0],res[1],QtGui.QImage.Format_RGB888)
+		pix = QtGui.QPixmap.fromImage(self.img)
+		self.parent.video_frame.setPixmap(pix)
 
-    def start(self):
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.nextFrame)
-        self.timer.start(self.refresh_rate)
+	def start(self):
+		self.timer = QtCore.QTimer()
+		self.timer.timeout.connect(self.nextFrame)
+		self.timer.start(self.refresh_rate)
 
-    def pause(self):
-        self.timer.stop()
+	def pause(self):
+		self.timer.stop()
 
-    def resume(self):
-        self.timer.start(self.refresh_rate)
+	def resume(self):
+		self.timer.start(self.refresh_rate)
 
-    def captureImg(self,filename):
-        print(filename)
-        self.img.save(filename)
+	def captureImg(self,filename):
+		self.img.save(save_path+filename)
 
 
 class VideoDisplay(QtWidgets.QWidget):
-    def __init__(self,parent):
-        super(VideoDisplay,self).__init__(parent)
-
-        self.layout = QtWidgets.QFormLayout(self)
-
-        # self.startButton = QtWidgets.QPushButton('Start',parent)
-        # self.startButton.clicked.connect(parent.startCapture)
-        # self.startButton.setFixedWidth(50)
-
-        self.captureButton = QtWidgets.QPushButton('ripe',parent)
-        self.captureButton.clicked.connect(parent.captureRipeImg)
-        self.unripebutton = QtWidgets.QPushButton('unripe',parent)
-        self.unripebutton.clicked.connect(parent.captureUnripeImg)
-        self.layout.addRow(self.captureButton)
-        self.layout.addRow(self.unripebutton)
-        self.setLayout(self.layout)
-        self.ripe = 'F'
+	def __init__(self,parent):
+		super(VideoDisplay,self).__init__(parent)
+		self.parent = parent
+		self.layout = QGridLayout(self)
 
 
+		self.ripebutton = QPushButton('ripe',parent)
+		self.unripebutton = QPushButton('unripe',parent)
+
+		self.countlabel = QLabel('count')
+		self.count = QLabel()
+		
+		self.countslider = QSlider(QtCore.Qt.Vertical)
+		self.countslider.setMaximum(100)
+		self.countslider.setMinimum(1)
+		self.countslider.setValue(1)
+		self.count.setNum(self.countslider.value())
+
+		self.intervallabel = QLabel('interval (ms)')
+		self.interval = QLabel()
+		self.interval.setNum(0)
+
+		self.intervalslider = QSlider(QtCore.Qt.Vertical)
+		self.intervalslider.setMaximum(1000)
+		self.intervalslider.setMinimum(1)
+		self.intervalslider.setValue(30)
+		self.interval.setNum(self.intervalslider.value())
+
+		self.videoframe = QLabel('vidframe')
+
+		self.layout.addWidget(self.ripebutton,0,0)
+		self.layout.addWidget(self.unripebutton,5,0)
+		self.layout.addWidget(self.countlabel,0,5)
+		self.layout.addWidget(self.count,1,5)
+		self.layout.addWidget(self.countslider,2,5,5,1)
+		self.layout.addWidget(self.intervallabel,0,6)
+		self.layout.addWidget(self.interval,1,6)
+		self.layout.addWidget(self.intervalslider,2,6,5,1)
+		self.layout.addWidget(self.videoframe,0,1,6,3)
+		self.setLayout(self.layout)
+  
+
+		self.countslider.valueChanged.connect(self.updateCount)
+		self.intervalslider.valueChanged.connect(self.updateInterval)
+
+		self.ripebutton.clicked.connect(parent.captureRipeImg)
+		self.unripebutton.clicked.connect(parent.captureUnripeImg)
+
+		self.capture_count = 0;
+	@QtCore.pyqtSlot()
+	def updateCount(self):
+		self.count.setNum(self.countslider.value())
+
+	@QtCore.pyqtSlot()
+	def updateInterval(self):
+		self.interval.setNum(self.intervalslider.value())
+
+	def start(self):
+		self.timer = QtCore.QTimer()
+		self.timer.timeout.connect(self.capture)
+		self.timer.start(self.intervalslider.value())
+
+	def stop(self):
+		self.timer.stop()
+
+	@QtCore.pyqtSlot()
+	def capture(self):
+		self.parent.Capture()
+		self.capture_count += 1
+		if self.capture_count >= self.countslider.value():
+			self.stop()
+			self.capture_count = 0
 
 class ControlWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(ControlWindow,self).__init__()
-        self.setGeometry(100,100,1024,768)
-        self.setWindowTitle("Capture Window")
-        self.capture = None
-        self.filename = 'tmp.jpg'
+	def __init__(self):
+		super(ControlWindow,self).__init__()
+		self.setGeometry(100,100,1024,768)
+		self.setWindowTitle("Capture Window")
+		self.capture = None
+		self.VideoDisplay = VideoDisplay(self)
+		self.setCentralWidget(self.VideoDisplay)
+		self.ripe = 'F'
+	def start(self):
+		if not self.capture:
+			self.capture = VideoCapture(self.VideoDisplay)
+		self.capture.start()
 
-        self.VideoDisplay = VideoDisplay(self)
-        self.setCentralWidget(self.VideoDisplay)
+	@QtCore.pyqtSlot()
+	def startCapture(self):
+		self.capture.start()
 
-    @QtCore.pyqtSlot()
-    def startCapture(self):
-        if not self.capture:
-            self.capture = VideoCapture(self.VideoDisplay)
-        self.capture.start()
+	@QtCore.pyqtSlot()
+	def captureRipeImg(self):
+		self.ripe = 'T'
+		self.VideoDisplay.start()
+	@QtCore.pyqtSlot()
+	def captureUnripeImg(self):
+		ripe = 'F'
+		self.VideoDisplay.start()
 
-    @QtCore.pyqtSlot()
-    def captureRipeImg(self):
-        ripe = 'T'
-        self.Capture(ripe)
-    @QtCore.pyqtSlot()
-    def captureUnripeImg(self):
-        ripe = 'F'
-        self.Capture(ripe)
-
-    def Capture(self,ripe):
-        if self.capture:
-            self.capture.pause()
-            self.capture.captureImg(self.filename)
-            upload(filename,ripe=ripe)
-            self.capture.resume()
+	def Capture(self):
+		if self.capture:
+			self.capture.pause()
+			unique_id = str(uuid.uuid4()) + os.path.splitext('tmp.jpg')[-1]
+			self.capture.captureImg(unique_id)
+			upload(unique_id,ripe=self.ripe)
+			self.capture.resume()
 
 if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    window = ControlWindow()
-    window.show()
-    window.startCapture()
-    sys.exit(app.exec_())
+	app = QtWidgets.QApplication(sys.argv)
+	window = ControlWindow()
+	window.show()
+	window.start()
+	sys.exit(app.exec_())
