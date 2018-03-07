@@ -22,18 +22,18 @@ save_path = './'
 def upload(filename,ripe='F'):
 	#URL of Flask server (assuming localhost)
 	#url = "http://127.0.0.1:5000/upload"
-	# url = "http://watermelon-flask.hp7jzffnep.ap-southeast-2.elasticbeanstalk.com/upload"
+	url = "http://watermelon-flask.hp7jzffnep.ap-southeast-2.elasticbeanstalk.com/upload"
 	# # File array for request
-	# files = {'files': open(filename, 'rb')}
+	files = {'files': open(filename, 'rb')}
   
-	# datetime_result = datetime.datetime.now()
-	# unique_id = str(uuid.uuid4()) + os.path.splitext(filename)[-1]
+	datetime_result = datetime.datetime.now()
+	unique_id = str(uuid.uuid4()) + os.path.splitext(filename)[-1]
 
-	# data = {'r': ripe, 'd': datetime_result, 'k': unique_id}
-	# # Add both the file image to upload, and accompanying data and POST
-	# r = requests.post(url, files=files, data=data)
-	# print(str(r.content))
-	print('uploading')
+	data = {'r': ripe, 'd': datetime_result, 'k': unique_id}
+	# Add both the file image to upload, and accompanying data and POST
+	r = requests.post(url, files=files, data=data)
+	print(str(r.content))
+
 class VideoCapture(QtWidgets.QWidget):
 	def __init__(self,parent):
 		super(QtWidgets.QWidget,self).__init__()
