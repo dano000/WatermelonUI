@@ -9,6 +9,7 @@ import cv2
 import time
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QFormLayout,QLabel 
+
 face_cascade = cv2.CascadeClassifier(cv2.__path__[0] + '\data\haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier(cv2.__path__[0] + '\data\haarcascade_eye.xml')
 
@@ -16,6 +17,10 @@ eye_cascade = cv2.CascadeClassifier(cv2.__path__[0] + '\data\haarcascade_eye.xml
 class VideoCapture():
 	def __init__(self,draw_frame):
 		self.cap = cv2.VideoCapture(0)#webcam
+		ret,tmpframe = self.cap.read()
+		#Setup the overlay
+		self.overlay = np.empty(tmpframe.shape,dtype=np.uint8)
+		cv2.rectangle(self.overlay,(0,0),(self.overlay.shape[0],self.overlay.shape[1]),(0,0,0),-1)
 		self.draw_frame=draw_frame
 		self.refresh_rate = 1000.0/30
 	def nextFrame(self):
@@ -41,18 +46,25 @@ class VideoCapture():
 		self.timer.start(self.refresh_rate)
 	def process(self,frame):
 		gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-
 		#detect faces
 		faces = face_cascade.detectMultiScale(gray,1.3,5)
-
+		roi_color = frame
+		alpha = .9
+		beta = 1 - alpha
 		#draw rectangle around face
 		for (x,y,w,h) in faces:
 			cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 			roi_gray = gray[y:y+h, x:x+w]
 			roi_color = frame[y:y+h, x:x+w]
 			eyes = eye_cascade.detectMultiScale(roi_gray)
+
+			cv2.addWeighted(self.overlay,alpha,frame,beta,0,frame)#apply overaly over whole frame
+			#Remove overlay over region of interest
+			cv2.addWeighted(self.overlay[y:y+h,x:x+w],-alpha/beta,roi_color,1/beta,0,roi_color)
 			for (ex,ey,ew,eh) in eyes:
 				cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+
+
 		return frame
 		
 class VideoDisplay(QtWidgets.QWidget):
