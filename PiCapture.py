@@ -9,6 +9,8 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QPushButton,QLabel,QSlider,QGridLayout
 
 import picamera
+import numpy
+import picamera.array
 import io
 
 import requests
@@ -16,7 +18,7 @@ import datetime
 import os
 import uuid
 
-save_path = './'
+save_path = "./"
 
 
 def upload(filename,ripe='F'):
@@ -38,22 +40,20 @@ class VideoCapture(QtWidgets.QWidget):
 	def __init__(self,parent):
 		super(QtWidgets.QWidget,self).__init__()
 		self.camera = picamera.PiCamera()
-		self.stream = io.BytesIO()
+		self.frame = picamera.array.PiRGBArray(self.camera);
 		self.parent = parent
 		self.camera.resolution = (512,389)
 		self.refresh_rate = 1000/30
 
 	def nextFrame(self):
 		#Capture frame-by-frame
-		stream = io.BytesIO()
-		self.camera.capture(stream,use_video_port='true',format='rgb')
-		stream.seek(0)
-		#Display frame
-		res = self.camera.resolution
-		frame = stream.read(-1)
-		self.img = QtGui.QImage(frame,res[0],res[1],QtGui.QImage.Format_RGB888)
+		self.camera.capture(self.frame,use_video_port='true',format='rgb')
+                #Display frame
+		frame = self.frame.array
+		self.img = QtGui.QImage(frame,frame.shape[1],frame.shape[0],QtGui.QImage.Format_RGB888)
 		pix = QtGui.QPixmap.fromImage(self.img)
 		self.parent.videoframe.setPixmap(pix)
+		self.frame.truncate(0)
 
 	def start(self):
 		self.timer = QtCore.QTimer()
@@ -182,6 +182,6 @@ class ControlWindow(QtWidgets.QMainWindow):
 if __name__ == '__main__':
 	app = QtWidgets.QApplication(sys.argv)
 	window = ControlWindow()
-	window.show()
+	window.showMaximized()
 	window.start()
 	sys.exit(app.exec_())
