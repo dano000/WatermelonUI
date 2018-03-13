@@ -42,7 +42,7 @@ class VideoCapture(QtWidgets.QWidget):
 		self.camera = picamera.PiCamera()
 		self.frame = picamera.array.PiRGBArray(self.camera);
 		self.parent = parent
-		self.camera.resolution = (512,389)
+		#self.camera.resolution = (512,389)
 		self.refresh_rate = 1000/30
 
 	def nextFrame(self):
