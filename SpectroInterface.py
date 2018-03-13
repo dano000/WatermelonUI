@@ -5,6 +5,8 @@ class SpectroInterface(object):
     def __init__(self):
         self.ser = serial.Serial()
         self.ser.baudrate = 115200
+        # Note this is for linux
+        # self.ser.port = "COM4" # for Windows assuming arduino is connected on COM4
         self.ser.port = "/dev/ttyUSB0"
         self.ser.open()
 
@@ -56,5 +58,4 @@ class SpectroInterface(object):
         result = self.get_spectrometer_data()
         self.led_off()
         return(result)
-
 
