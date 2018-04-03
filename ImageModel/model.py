@@ -6,6 +6,8 @@
 
 import tensorflow as tf
 
+model_type = "IMAGE"
+#Model HyperParameters
 IM_WIDTH = 128
 IM_HEIGHT = 128
 IM_CHANNELS = 1
@@ -43,7 +45,7 @@ def model_fn(features,labels,mode):
 			activation=tf.nn.relu)
 		dropout = tf.layers.dropout(
 			inputs =dense ,
-			rate=.DROP_RATE,
+			rate=DROP_RATE,
 			training=mode == tf.estimator.ModeKeys.TRAIN)
 	with tf.name_scope("Logits"):
 		logits = tf.layers.dense(inputs=dropout,units=2,name="logits")

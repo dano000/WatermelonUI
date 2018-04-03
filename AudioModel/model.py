@@ -4,12 +4,17 @@
 #
 #
 
+import tensorflow as tf
+
+model_type = "AUDIO"
 #Model Hyperparameters
 
 AUDIO_LENGTH = 2048
 DENSE_UNITS = 256
 DROP_RATE = .4
 LEARNING_RATE = .01
+
+
 def model_fn(features,labels,mode):
 
 	input_layer = tf.reshape(features["audio"],[-1,AUDIO_LENGTH],name="Input")
@@ -19,7 +24,7 @@ def model_fn(features,labels,mode):
 		units=DENSE_UNITS,
 		name="Dense")
 
-	drop = tf.layers.drop(
+	drop = tf.layers.dropout(
 		inputs=input_layer,
 		rate=DROP_RATE,
 		name="Drop")

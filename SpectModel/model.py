@@ -4,26 +4,31 @@
 #
 #
 
+import tensorflow as tf
+model_type = "SPECT"
+
 #Model Hyperparameters
 
 SPECT_LENTH = 288
 DENSE_UNITS = 256
 DROP_RATE = .4
 LEARNING_RATE = .01
+
 def model_fn(features,labels,mode):
 
-	input_layer = tf.reshape(features["spect"],[-1,AUDIO_LENGTH],name="Input")
+	input_layer = tf.reshape(features["spect"],[-1,SPECT_LENTH],name="Input")
 
 	dense = tf.layers.dense(
 		inputs=input_layer,
 		units=DENSE_UNITS,
 		name="Dense")
 
-	drop = tf.layers.drop(
-		inputs=input_layer,
+	drop = tf.layers.dropout(
+		inputs=dense,
 		rate=DROP_RATE,
 		name="Drop")
 
+	
 	logits = tf.layers.dense(
 		inputs=drop,
 		units=2,
