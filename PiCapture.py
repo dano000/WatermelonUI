@@ -181,6 +181,8 @@ class ControlWindow(QtWidgets.QMainWindow):
                 ripe = 'F'
                 self.VideoDisplay.start()
 
+                
+
         def Capture(self):
                 if self.capture:
                         self.capture.pause()
